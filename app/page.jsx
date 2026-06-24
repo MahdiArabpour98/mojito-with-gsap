@@ -6,7 +6,7 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
 export default function Home() {
   return (
     <main>
-      <div className="size-96 bg-green-500 flex-center">aa</div>
+      <div className="size-96 bg-green-500 flex-center">2</div>
     </main>
   );
 }
