@@ -2,16 +2,39 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import gsap from "gsap";
+import { SplitText } from "gsap/all";
 import { useGSAP } from "@gsap/react";
 import { heroLeftLeaf, heroRightLeaf } from "@/constants/images";
 
 const Hero = () => {
-  useGSAP(() => {}, []);
+  useGSAP(() => {
+    const heroSplit = new SplitText(".title", { type: "chars, words" });
+    const paragraphSplit = new SplitText(".subtitle", { type: "lines" });
+
+    heroSplit.chars.forEach((char) => char.classList.add("text-gradient"));
+
+    gsap.from(heroSplit.chars, {
+      yPercent: 100,
+      duration: 1.8,
+      ease: "expo.out",
+      stagger: 0.06,
+    });
+
+    gsap.from(paragraphSplit.lines, {
+      opacity: 0,
+      yPercent: 100,
+      duration: 1.8,
+      ease: "expo.out",
+      stagger: 0.06,
+      delay: 1,
+    });
+  }, []);
 
   return (
     <>
       <section id="hero" className="noisy">
-        <h1>MOJITO</h1>
+        <h1 className="title">MOJITO</h1>
 
         <Image src={heroLeftLeaf} className="left-leaf" alt="left-leaf" width={200} height={200} />
 
