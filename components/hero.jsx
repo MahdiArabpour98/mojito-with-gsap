@@ -1,16 +1,26 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import gsap from "gsap";
-import { SplitText } from "gsap/all";
 import { useGSAP } from "@gsap/react";
-import { heroLeftLeaf, heroRightLeaf } from "@/constants/images";
+import gsap from "gsap";
+import { ScrollTrigger, SplitText } from "gsap/all";
+import { useRef } from "react";
+import { useMediaQuery } from "react-responsive";
+
+gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 
 const Hero = () => {
+  const videoRef = useRef();
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   useGSAP(() => {
-    const heroSplit = new SplitText(".title", { type: "chars, words" });
-    const paragraphSplit = new SplitText(".subtitle", { type: "lines" });
+    const heroSplit = new SplitText(".title", {
+      type: "chars, words",
+    });
+
+    const paragraphSplit = new SplitText(".subtitle", {
+      type: "lines",
+    });
 
     heroSplit.chars.forEach((char) => char.classList.add("text-gradient"));
 
@@ -40,8 +50,46 @@ const Hero = () => {
         },
       })
       .to(".right-leaf", { y: 200 }, 0)
-      .to(".left-leaf", { y: -200 }, 0)
-      .to(".arrow", { y: 100 }, 0);
+      .to(".left-leaf", { y: -200 }, 0);
+
+    const startValue = isMobile ? "top 50%" : "center 60%";
+    const endValue = isMobile ? "120% top" : "bottom top";
+
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    function initVideo() {
+      video.pause();
+      video.currentTime = 0;
+
+      gsap.to(video, {
+        currentTime: video.duration,
+        ease: "none",
+        scrollTrigger: {
+          trigger: video,
+          start: startValue,
+          end: endValue,
+          scrub: true,
+          pin: true,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      ScrollTrigger.refresh();
+    }
+
+    if (video.readyState >= 1) {
+      initVideo();
+    } else {
+      video.addEventListener("loadedmetadata", initVideo, {
+        once: true,
+      });
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
   }, []);
 
   return (
@@ -49,22 +97,18 @@ const Hero = () => {
       <section id="hero" className="noisy">
         <h1 className="title">MOJITO</h1>
 
-        <Image src={heroLeftLeaf} className="left-leaf" alt="left-leaf" width={200} height={200} />
+        <img src="/images/hero-left-leaf.png" alt="left-leaf" className="left-leaf" />
 
-        <Image
-          src={heroRightLeaf}
-          className="right-leaf"
-          alt="right-leaf"
-          width={200}
-          height={200}
-        />
+        <img src="/images/hero-right-leaf.png" alt="right-leaf" className="right-leaf" />
 
         <div className="body">
           <div className="content">
             <div className="space-y-5 hidden md:block">
               <p>Cool. Crisp. Classic.</p>
+
               <p className="subtitle">
-                Sip the Spirit <br /> of Summer
+                Sip the Spirit <br />
+                of Summer
               </p>
             </div>
 
@@ -73,11 +117,16 @@ const Hero = () => {
                 Every cocktail on our menu is a blend of premium ingredients, creative flair, and
                 timeless recipes — designed to delight your senses.
               </p>
-              <Link href="#cocktails">View cocktails</Link>
+
+              <a href="#cocktails">View cocktails</a>
             </div>
           </div>
         </div>
       </section>
+
+      <div className="video absolute inset-0">
+        <video ref={videoRef} muted playsInline preload="auto" src="/videos/output.mp4" />
+      </div>
     </>
   );
 };
